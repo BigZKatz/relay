@@ -1,6 +1,9 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 
+if (process.env.DEV_AUTH_BYPASS === "true" && process.env.NODE_ENV !== "development") {
+  throw new Error("DEV_AUTH_BYPASS must not be set outside of NODE_ENV=development");
+}
 const isDevBypassEnabled = process.env.NODE_ENV === "development" && process.env.DEV_AUTH_BYPASS === "true";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({

@@ -1,10 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
+import { validateRequest } from "twilio";
 import { db } from "@/lib/db";
 import { logCommunication } from "@/lib/entrata";
 import { resolveInboundParticipant } from "@/lib/threading";
 
 export async function POST(req: NextRequest) {
-  const formData = await req.formData();
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  if (!authToken) {
+    return new NextResponse("Server misconfigured", { status: 500 });
+  }
+
+  const twilioSignature = req.headers.get("x-twilio-signature") ?? "";
+  const webhookUrl = req.nextUrl.toString();
+
+  // Read body as text first for signature validation, then re-parse as form data
+  const rawBody = await req.text();
+  const params: Record<string, string> = {};
+  for (const [k, v] of new URLSearchParams(rawBody)) {
+    params[k] = v;
+  }
+
+  if (!validateRequest(authToken, twilioSignature, webhookUrl, params)) {
+    return new NextResponse("Forbidden", { status: 403 });
+  }
+
+  const formData = new URLSearchParams(rawBody);
 
   const fromPhone = formData.get("From") as string;
   const toPhone = formData.get("To") as string;
