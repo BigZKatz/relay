@@ -1,0 +1,209 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Property {
+  id                      String                    @id @default(cuid())
+  name                    String
+  address                 String
+  phone                   String?
+  twilioNumber            String?
+  entraId                 String?                   @unique
+  timezone                String                    @default("America/Denver")
+  websiteUrl              String?
+  applyUrl                String?
+  floorPlansUrl           String?
+  reviewUrl               String?
+  createdAt               DateTime                  @default(now())
+  residents               Resident[]
+  applicants              Applicant[]
+  prospects               Prospect[]
+  messages                Message[]
+  businessHours           PropertyBusinessHour[]
+  settings                PropertySettings?
+  notificationRecipients  NotificationRecipient[]
+  users                   AppUser[]
+}
+
+model Resident {
+  id              String             @id @default(cuid())
+  firstName       String
+  lastName        String
+  phone           String
+  unit            String
+  email           String?
+  entraId         String?            @unique
+  status          String             @default("active")
+  propertyId      String
+  property        Property           @relation(fields: [propertyId], references: [id])
+  createdAt       DateTime           @default(now())
+  messages        MessageRecipient[]
+  inboundMessages InboundMessage[]
+}
+
+model Template {
+  id        String   @id @default(cuid())
+  name      String
+  body      String
+  category  String   @default("general")
+  createdAt DateTime @default(now())
+}
+
+model Message {
+  id          String             @id @default(cuid())
+  body        String
+  mode        String
+  status      String             @default("pending")
+  propertyId  String?
+  property    Property?          @relation(fields: [propertyId], references: [id])
+  sentAt      DateTime?
+  createdAt   DateTime           @default(now())
+  entraLogId  String?
+  entraLogged Boolean            @default(false)
+  recipients  MessageRecipient[]
+  media       MessageMedia[]
+}
+
+model Applicant {
+  id              String             @id @default(cuid())
+  firstName       String
+  lastName        String
+  phone           String
+  unit            String
+  email           String?
+  entraId         String?            @unique
+  status          String             @default("pending")
+  applicationDate DateTime           @default(now())
+  propertyId      String
+  property        Property           @relation(fields: [propertyId], references: [id])
+  createdAt       DateTime           @default(now())
+  messages        MessageRecipient[]
+  inboundMessages InboundMessage[]
+}
+
+model MessageRecipient {
+  id          String     @id @default(cuid())
+  messageId   String
+  message     Message    @relation(fields: [messageId], references: [id])
+  residentId  String?
+  resident    Resident?  @relation(fields: [residentId], references: [id])
+  applicantId String?
+  applicant   Applicant? @relation(fields: [applicantId], references: [id])
+  prospectId  String?
+  prospect    Prospect?  @relation(fields: [prospectId], references: [id])
+  phone       String
+  status      String     @default("pending")
+  twilioSid   String?
+  errorCode   String?
+  sentAt      DateTime?
+}
+
+model Prospect {
+  id           String             @id @default(cuid())
+  firstName    String
+  lastName     String
+  phone        String
+  email        String?
+  unitInterest String?
+  notes        String?
+  source       String?
+  status       String             @default("active")
+  propertyId   String
+  property     Property           @relation(fields: [propertyId], references: [id])
+  createdAt    DateTime           @default(now())
+  messages     MessageRecipient[]
+  inboundMessages InboundMessage[]
+}
+
+model InboundMessage {
+  id          String         @id @default(cuid())
+  fromPhone   String
+  toPhone     String
+  body        String
+  twilioSid   String         @unique
+  receivedAt  DateTime       @default(now())
+  residentId  String?
+  resident    Resident?      @relation(fields: [residentId], references: [id])
+  applicantId String?
+  applicant   Applicant?     @relation(fields: [applicantId], references: [id])
+  prospectId  String?
+  prospect    Prospect?      @relation(fields: [prospectId], references: [id])
+  entraLogged Boolean        @default(false)
+  media       InboundMedia[]
+}
+
+model MessageMedia {
+  id          String   @id @default(cuid())
+  messageId   String
+  message     Message  @relation(fields: [messageId], references: [id])
+  url         String
+  kind        String
+  mimeType    String?
+  filename    String?
+  createdAt   DateTime @default(now())
+}
+
+model InboundMedia {
+  id               String         @id @default(cuid())
+  inboundMessageId String
+  inboundMessage   InboundMessage @relation(fields: [inboundMessageId], references: [id])
+  url              String
+  kind             String
+  mimeType         String?
+  filename         String?
+  createdAt        DateTime       @default(now())
+}
+
+model PropertySettings {
+  id                            String   @id @default(cuid())
+  propertyId                    String   @unique
+  property                      Property @relation(fields: [propertyId], references: [id])
+  afterHoursEnabled             Boolean  @default(false)
+  afterHoursMessage             String?
+  soundEnabled                  Boolean  @default(true)
+  repeatSoundUntilRead          Boolean  @default(false)
+  emailNotificationsEnabled     Boolean  @default(true)
+  analyticsEnabled              Boolean  @default(true)
+  helpEmail                     String?
+  createdAt                     DateTime @default(now())
+  updatedAt                     DateTime @updatedAt
+}
+
+model PropertyBusinessHour {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  dayOfWeek  Int
+  isClosed   Boolean  @default(false)
+  openTime   String?
+  closeTime  String?
+
+  @@unique([propertyId, dayOfWeek])
+}
+
+model NotificationRecipient {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  email      String
+  roleLabel  String?
+  enabled    Boolean  @default(true)
+  createdAt  DateTime @default(now())
+}
+
+model AppUser {
+  id          String   @id @default(cuid())
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id])
+  name        String
+  email       String   @unique
+  role        String   @default("staff")
+  isMasterAdmin Boolean @default(false)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
