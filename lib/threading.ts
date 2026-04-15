@@ -25,41 +25,22 @@ export async function resolveInboundParticipant(fromPhone: string, toPhone?: str
     return { residentId: null, applicantId: null, prospectId: null };
   }
 
-  const candidateRecipients = await db.messageRecipient.findMany({
-    orderBy: [
-      { sentAt: "desc" },
-      { message: { sentAt: "desc" } },
-      { message: { createdAt: "desc" } },
-    ],
-    take: 200,
+  const toVariants = phoneVariants(toPhone);
+
+  // Query directly by phone variants — no arbitrary row limit
+  const recipient = await db.messageRecipient.findFirst({
+    where: {
+      phone: { in: variants },
+      ...(toVariants.length > 0
+        ? { message: { property: { twilioNumber: { in: toVariants } } } }
+        : {}),
+    },
+    orderBy: [{ sentAt: "desc" }],
     select: {
-      phone: true,
       residentId: true,
       applicantId: true,
       prospectId: true,
-      message: {
-        select: {
-          property: {
-            select: {
-              twilioNumber: true,
-            },
-          },
-        },
-      },
     },
-  });
-
-  const toVariants = phoneVariants(toPhone);
-  const recipient = candidateRecipients.find((candidate) => {
-    if (!variants.includes(normalizePhone(candidate.phone))) {
-      return false;
-    }
-
-    if (toVariants.length === 0) {
-      return true;
-    }
-
-    return toVariants.includes(normalizePhone(candidate.message.property?.twilioNumber));
   });
 
   if (recipient) {
@@ -69,6 +50,7 @@ export async function resolveInboundParticipant(fromPhone: string, toPhone?: str
       prospectId: recipient.prospectId ?? null,
     };
   }
+
 
   const [resident, applicant, prospect] = await Promise.all([
     db.resident.findFirst({ where: { phone: { in: variants } }, select: { id: true } }),

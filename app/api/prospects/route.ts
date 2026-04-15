@@ -20,6 +20,12 @@ export async function POST(req: NextRequest) {
     if (!firstName || !lastName || !phone || !propertyId) {
       return NextResponse.json({ error: "firstName, lastName, phone, and propertyId are required" }, { status: 400 });
     }
+    if (!/^\+?1?\d{10,14}$/.test(String(phone).replace(/[\s\-().]/g, ""))) {
+      return NextResponse.json({ error: "Phone number format is invalid" }, { status: 422 });
+    }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim())) {
+      return NextResponse.json({ error: "Email address format is invalid" }, { status: 422 });
+    }
 
     const property = await db.property.findUnique({ where: { id: propertyId }, select: { id: true } });
     if (!property) {

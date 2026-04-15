@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { sendSMS } from "@/lib/twilio";
 import { logCommunication } from "@/lib/entrata";
 import { interpolateMessage, stripPersonalization } from "@/lib/utils";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 type PersonRecord = {
   id: string;
@@ -14,11 +15,23 @@ type PersonRecord = {
 };
 
 export async function POST(req: NextRequest) {
+  const rl = rateLimit("send-sms", getClientIp(req), 20, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait a moment before sending again." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } }
+    );
+  }
+
   try {
     const { body, mode, recipientIds, applicantIds, prospectIds, propertyId } = await req.json();
 
     if (!body?.trim()) {
       return NextResponse.json({ error: "Message body is required." }, { status: 400 });
+    }
+    // Twilio hard limit is 1600 chars; enforce 1500 to leave room for personalization tokens
+    if (body.length > 1500) {
+      return NextResponse.json({ error: "Message is too long. Maximum 1500 characters." }, { status: 400 });
     }
     if (mode !== "personalized" && mode !== "community") {
       return NextResponse.json({ error: "Invalid mode." }, { status: 400 });
