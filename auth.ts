@@ -14,7 +14,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const isLoggedIn = !!session?.user || isDevBypassEnabled;
       const isOnDashboard = !nextUrl.pathname.startsWith("/login") && !nextUrl.pathname.startsWith("/api/auth");
       if (isOnDashboard) return isLoggedIn;
-      if (session?.user) return Response.redirect(new URL("/", nextUrl));
+      if (session?.user || isDevBypassEnabled) return Response.redirect(new URL("/", nextUrl));
       return true;
     },
     session({ session }) {
