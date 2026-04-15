@@ -72,7 +72,7 @@ export default function ResidentList({ residents, properties }: Props) {
         >
           All ({residents.length})
         </button>
-        {properties.map((p) => {
+        {properties.filter((p) => residents.some((r) => r.property.id === p.id)).map((p) => {
           const count = residents.filter((r) => r.property.id === p.id).length;
           return (
             <button
