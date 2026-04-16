@@ -25,8 +25,8 @@ type Message = {
   mode: string;
   status: string;
   entraLogged: boolean;
-  sentAt: Date | null;
-  createdAt: Date;
+  sentAt: string | null;
+  createdAt: string;
   property: { name: string } | null;
   recipients: Recipient[];
 };
@@ -55,6 +55,9 @@ function ThreadRow({
   const isCommunity = msg.mode === "community";
   const preview = msg.body.length > 55 ? msg.body.slice(0, 55) + "…" : msg.body;
   const dateStr = msg.sentAt ?? msg.createdAt;
+  const d = new Date(dateStr);
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const dateLabel = `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
 
   return (
     <button
@@ -81,7 +84,7 @@ function ThreadRow({
             {msg.property ? ` · ${msg.property.name}` : ""}
           </span>
           <span className={cn("text-xs flex-shrink-0", active ? "text-blue-100" : "text-slate-400")}>
-            {new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+            {dateLabel}
           </span>
         </div>
         <p className={cn("text-xs mt-0.5 truncate", active ? "text-blue-100" : "text-slate-500")}>

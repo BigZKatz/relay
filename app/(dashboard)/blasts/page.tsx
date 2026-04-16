@@ -20,7 +20,12 @@ async function getMessages() {
 }
 
 export default async function BlastsPage() {
-  const messages = await getMessages();
+  const raw = await getMessages();
+  const messages = raw.map((m) => ({
+    ...m,
+    sentAt: m.sentAt?.toISOString() ?? null,
+    createdAt: m.createdAt.toISOString(),
+  }));
   return (
     <Suspense fallback={<div className="h-[calc(100vh-56px)] lg:h-screen bg-white" />}>
       <BlastsLayout messages={messages} />
