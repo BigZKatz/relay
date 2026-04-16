@@ -1,8 +1,8 @@
 [build]
-buildCommand = "npx prisma generate && npm run build"
+buildCommand = "npx prisma generate && npx prisma db push && npx tsx prisma/seed.ts && npm run build"
 
 [deploy]
-startCommand = "npx prisma db push && npx prisma db seed && npm run start"
+startCommand = "npm run start"
 healthcheckPath = "/login"
 healthcheckTimeout = 100
 restartPolicyType = "on_failure"
