@@ -1,6 +1,8 @@
 import { signIn } from "@/auth";
 import { Radio } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 const demoEnabled = !!process.env.DEMO_LOGIN_PASSWORD;
 const demoEmail = process.env.DEMO_LOGIN_EMAIL ?? "demo@relay.app";
 
