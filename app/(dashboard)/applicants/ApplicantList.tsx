@@ -131,7 +131,7 @@ export default function ApplicantList({ applicants }: { applicants: Applicant[] 
                 <td className="px-4 py-4 text-slate-600">{formatPhone(a.phone)}</td>
                 <td className="px-4 py-4 text-slate-600">{a.property.name}</td>
                 <td className="px-4 py-4"><StatusBadge status={a.status} /></td>
-                <td className="px-4 py-4 text-slate-500 text-xs">{new Date(a.applicationDate).toLocaleDateString()}</td>
+                <td className="px-4 py-4 text-slate-500 text-xs">{new Date(a.applicationDate).toISOString().slice(0, 10)}</td>
                 <td className="px-4 py-4 text-slate-500">{a.messages.length}</td>
                 <td className="px-4 py-4">
                   <button

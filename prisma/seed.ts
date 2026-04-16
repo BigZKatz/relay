@@ -627,16 +627,10 @@ async function main() {
       media: {
         create: [
           {
-            url: "http://localhost:3000/qa-sample.jpg",
+            url: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800",
             kind: "image",
             mimeType: "image/jpeg",
-            filename: "qa-sample.jpg",
-          },
-          {
-            url: "http://localhost:3000/qa-sample.mp4",
-            kind: "video",
-            mimeType: "video/mp4",
-            filename: "qa-sample.mp4",
+            filename: "move-in-guide-preview.jpg",
           },
         ],
       },
@@ -657,10 +651,10 @@ async function main() {
   await prisma.inboundMedia.create({
     data: {
       inboundMessageId: inboundWithMedia.id,
-      url: "http://localhost:3000/qa-sample.jpg",
+      url: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800",
       kind: "image",
       mimeType: "image/jpeg",
-      filename: "qa-sample.jpg",
+      filename: "property-photo.jpg",
     },
   });
 
