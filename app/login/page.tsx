@@ -1,6 +1,9 @@
 import { signIn } from "@/auth";
 import { Radio } from "lucide-react";
 
+const demoEnabled = !!process.env.DEMO_LOGIN_PASSWORD;
+const demoEmail = process.env.DEMO_LOGIN_EMAIL ?? "demo@relay.app";
+
 export default function LoginPage() {
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
@@ -13,11 +16,15 @@ export default function LoginPage() {
           <p className="text-slate-400 text-sm mt-1">Property Messaging</p>
         </div>
 
-        <div className="bg-slate-800 rounded-2xl p-8 border border-slate-700/50">
-          <h2 className="text-lg font-medium text-white mb-2">Sign in</h2>
-          <p className="text-slate-400 text-sm mb-6">
-            Use your Google account to access the dashboard.
-          </p>
+        <div className="bg-slate-800 rounded-2xl p-8 border border-slate-700/50 space-y-4">
+          <div>
+            <h2 className="text-lg font-medium text-white mb-2">Sign in</h2>
+            <p className="text-slate-400 text-sm">
+              {demoEnabled
+                ? "Use your Google account or the demo login below."
+                : "Use your Google account to access the dashboard."}
+            </p>
+          </div>
 
           <form
             action={async () => {
@@ -33,6 +40,48 @@ export default function LoginPage() {
               Sign in with Google
             </button>
           </form>
+
+          {demoEnabled && (
+            <>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-slate-700" />
+                <span className="text-xs text-slate-500">or demo access</span>
+                <div className="flex-1 h-px bg-slate-700" />
+              </div>
+
+              <form
+                action={async (formData: FormData) => {
+                  "use server";
+                  await signIn("demo", {
+                    email: formData.get("email"),
+                    password: formData.get("password"),
+                    redirectTo: "/",
+                  });
+                }}
+                className="space-y-3"
+              >
+                <input
+                  name="email"
+                  type="email"
+                  defaultValue={demoEmail}
+                  className="w-full bg-slate-700 border border-slate-600 text-white text-sm rounded-lg px-3 py-2.5 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Email"
+                />
+                <input
+                  name="password"
+                  type="password"
+                  className="w-full bg-slate-700 border border-slate-600 text-white text-sm rounded-lg px-3 py-2.5 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Demo password"
+                />
+                <button
+                  type="submit"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors"
+                >
+                  Sign in with Demo Account
+                </button>
+              </form>
+            </>
+          )}
         </div>
 
         <p className="text-center text-xs text-slate-500 mt-6">
