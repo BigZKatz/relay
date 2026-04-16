@@ -1,12 +1,13 @@
 import { signIn } from "@/auth";
 import { Radio } from "lucide-react";
+import { DemoLoginForm } from "./DemoLoginForm";
 
 export const dynamic = "force-dynamic";
 
-const demoEnabled = !!process.env.DEMO_LOGIN_PASSWORD;
-const demoEmail = process.env.DEMO_LOGIN_EMAIL ?? "demo@relay.app";
-
 export default function LoginPage() {
+  const demoEnabled = !!process.env.DEMO_LOGIN_PASSWORD;
+  const demoEmail = process.env.DEMO_LOGIN_EMAIL ?? "demo@relay.app";
+
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
@@ -51,37 +52,7 @@ export default function LoginPage() {
                 <div className="flex-1 h-px bg-slate-700" />
               </div>
 
-              <form
-                action={async (formData: FormData) => {
-                  "use server";
-                  await signIn("demo", {
-                    email: formData.get("email"),
-                    password: formData.get("password"),
-                    redirectTo: "/",
-                  });
-                }}
-                className="space-y-3"
-              >
-                <input
-                  name="email"
-                  type="email"
-                  defaultValue={demoEmail}
-                  className="w-full bg-slate-700 border border-slate-600 text-white text-sm rounded-lg px-3 py-2.5 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Email"
-                />
-                <input
-                  name="password"
-                  type="password"
-                  className="w-full bg-slate-700 border border-slate-600 text-white text-sm rounded-lg px-3 py-2.5 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Demo password"
-                />
-                <button
-                  type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors"
-                >
-                  Sign in with Demo Account
-                </button>
-              </form>
+              <DemoLoginForm defaultEmail={demoEmail} />
             </>
           )}
         </div>
